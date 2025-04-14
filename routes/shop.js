@@ -100,7 +100,7 @@ module.exports = (db, express, bucket, upload) => {
             salePrice: parseInt(data.sale_price),
             originalPrice: parseInt(data.original_price),
             stock: parseInt(data.stock),
-            expiredDate: isoFormattedDate,
+            expiredDate: formattedDate || null, // isoFormattedDate ??,
             imageUrl: imageUrl,
             discountAt: Timestamp.now(),
             showStatus: true,
