@@ -1,5 +1,5 @@
 const { uploadSingleImage } = require("../controller/image_controller");
-
+const calculateCoordinate = require("../utils/func/calculate-coordinate");
 const { Timestamp } = require("firebase-admin/firestore");
 
 module.exports = (db, express, bucket, upload) => {
@@ -206,5 +206,52 @@ module.exports = (db, express, bucket, upload) => {
     }
     return res.status(200).send({ status: "success", imageUrl });
   });
+
+  router.get("/nearbyShop", async (req, res) => {
+    const { lng, lat } = req.query;
+
+    if (!lng || !lat) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "Missing coordinates" });
+    }
+
+    const coordinate = calculateCoordinate(parseFloat(lat), parseFloat(lng), 5);
+    console.log(coordinate);
+    const snapshot = await db
+      // .collection("shop")
+      // .where("lat", ">=", coordinate.minLat.toString())
+      // .where("lat", "<=", coordinate.maxLat.toString())
+      // .where("lng", ">=", coordinate.minLon.toString())
+      // .where("lng", "<=", coordinate.maxLon.toString())
+      // .get();
+      .collection("shop")
+      .where("googleLocation.lat", ">=", coordinate.minLat.toString())
+      .where("googleLocation.lat", "<=", coordinate.maxLat.toString())
+      .where("googleLocation.lng", ">=", coordinate.minLon.toString())
+      .where("googleLocation.lng", "<=", coordinate.maxLon.toString())
+      .get();
+
+    if (snapshot.empty) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "No shops found" });
+    }
+    const shopList = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        shopId: doc.id,
+        shopName: data.shopName,
+        lat: data.lat,
+        lng: data.lng,
+        googleLocation: data.googleLocation,
+      };
+    });
+    return res.status(200).json({
+      status: "success",
+      data: shopList || [],
+    });
+  });
+
   return router;
 };
