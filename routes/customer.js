@@ -3,39 +3,49 @@ module.exports = (db, express) => {
   const router = express.Router();
   router.get("/getShop/", async (req, res) => {});
   // ไว้สำหรับร้านค้าที่กำลังขายสินค้าอยู่
-  router.get("/availableShop/", async (req, res) => {
+  router.get("/availableShop", async (req, res) => {
     try {
-      const shopList = [];
-      const shopsSnapshot = await db.collection("shop").get();
-      // เช็คทุกร้านค้า
-      for (const shopDoc of shopsSnapshot.docs) {
+      const result = [];
+
+      const shopSnapshot = await db
+        .collection("shop")
+        .where("status", "==", "active")
+        .get();
+
+      if (shopSnapshot.empty) {
+        return res.status(200).send({ status: "success", data: [] });
+      }
+
+      for (const shopDoc of shopSnapshot.docs) {
         const shopData = shopDoc.data();
         const shopId = shopDoc.id;
-        let productSell = false;
+
         const productsSnapshot = await db
           .collection("shop")
           .doc(shopId)
           .collection("products")
+          .where("showStatus", "==", true)
           .get();
-        for (const productDoc of productsSnapshot.docs) {
-          const productData = productDoc.data();
-          // ไปเช็คทุกรสินค้าว่ามีขายไหม
 
-          if (productData.showStatus === true) {
-            productSell = true;
-          }
-        }
-        //หลังจากทำเสร็จหมดก็ response ข้อมูลกลับไป
+        const products = productsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-        if (productSell) {
-          shopList.push(shopData);
+        // เพิ่มเฉพาะร้านที่มีสินค้าที่แสดง
+        if (products.length > 0) {
+          result.push({
+            shopId,
+            ...shopData,
+            products,
+          });
         }
       }
 
-      return res.status(200).send({ status: "success", data: shopList });
+      return res.status(200).send({ status: "success", data: result });
     } catch (error) {
-      console.log(error);
-      return res.status(500).send({ status: "failed" });
+      console.error("Error fetching available shops:", error);
+      return res.status(500).send({ status: "failed", error: error.message });
     }
   });
 

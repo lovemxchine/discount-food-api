@@ -33,6 +33,7 @@ const signInRoute = require("./routes/authentication/signIn")(db, express);
 const shopRoute = require("./routes/shop")(db, express, bucket, upload);
 const customerRoute = require("./routes/customer")(db, express);
 const guestRoute = require("./routes/guest")(db, express);
+const adminRoute = require("./routes/admin")(db, express);
 
 app.use(express.json());
 app.use(cors({ origin: true }));
@@ -44,6 +45,7 @@ app.use("/authentication", registerRoute);
 app.use("/customer", customerRoute);
 app.use("/shop", shopRoute);
 app.use("/guest", guestRoute);
+app.use("/admin", adminRoute);
 
 (async () => {
   const { default: geminiRoute } = await import(
