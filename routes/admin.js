@@ -4,10 +4,14 @@ module.exports = (db, express) => {
   router.post("/confirmationShop", async (req, res) => {
     try {
       const { uid, status } = req.body;
-      if (status !== "APPROVE") {
+      if (status === "REJECT") {
         await db.collection("in_register_shop").doc(uid).delete();
         return res.status(400).send({ status: "failed" });
       }
+      if (status !== "APPROVE") {
+        return res.status(400).send({ status: "failed" });
+      }
+
       const shop = await db.collection("in_register_shop").doc(uid).get();
       const shopData = shop.data();
       // เช็คทุกร้านค้า
