@@ -64,6 +64,7 @@ module.exports = (db, express, bucket, upload) => {
           },
           // shop location from user input
           shopLocation_th: {
+            place: data.shopLocation_th.place,
             province: data.shopLocation_th.province,
             district: data.shopLocation_th.district,
             subdistrict: data.shopLocation_th.subdistrict,
