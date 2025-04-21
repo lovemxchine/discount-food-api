@@ -28,6 +28,8 @@ module.exports = (db, express) => {
         email: shopData.email,
         tel: shopData.tel,
       });
+      await db.collection("in_register_shop").doc(uid).delete();
+
       //   console.log(shopList);
       return res.status(200).send({ status: "success" });
     } catch (error) {
