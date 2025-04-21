@@ -233,9 +233,11 @@ module.exports = (db, express, bucket, upload) => {
       .get();
 
     if (snapshot.empty) {
-      return res
-        .status(404)
-        .json({ status: "error", message: "No shops found" });
+      return res.status(404).json({
+        status: "error",
+        message: "No shops found",
+        data: [],
+      });
     }
     const shopList = snapshot.docs.map((doc) => {
       const data = doc.data();
@@ -249,6 +251,7 @@ module.exports = (db, express, bucket, upload) => {
     });
     return res.status(200).json({
       status: "success",
+      message: "shop founded",
       data: shopList || [],
     });
   });
