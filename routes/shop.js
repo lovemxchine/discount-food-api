@@ -239,6 +239,7 @@ module.exports = (db, express, bucket, upload) => {
         data: [],
       });
     }
+
     const shopList = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
