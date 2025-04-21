@@ -29,7 +29,7 @@ module.exports = (db, express, bucket, upload) => {
       return res.status(500).send({ status: "failed" });
     }
   });
-
+  
   router.post("/registerShop/", upload.array("images", 3), async (req, res) => {
     const data = req.body;
 
