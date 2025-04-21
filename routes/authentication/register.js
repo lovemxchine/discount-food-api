@@ -72,8 +72,8 @@ module.exports = (db, express, bucket, upload) => {
           },
           // shop location from google map api
           googleLocation: {
-            lat: data.googleLocation.lat,
-            lng: data.googleLocation.lng,
+            lat: Number(data.googleLocation.lat),
+            lng: Number(data.googleLocation.lng),
             formatted_address: data.googleLocation.formatted_address,
             place_name: data.googleLocation.place_name,
           },

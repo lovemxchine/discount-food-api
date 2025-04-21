@@ -226,12 +226,14 @@ module.exports = (db, express, bucket, upload) => {
       // .where("lng", "<=", coordinate.maxLon.toString())
       // .get();
       .collection("shop")
-      .where("googleLocation.lat", ">=", coordinate.minLat.toString())
-      .where("googleLocation.lat", "<=", coordinate.maxLat.toString())
-      .where("googleLocation.lng", ">=", coordinate.minLon.toString())
-      .where("googleLocation.lng", "<=", coordinate.maxLon.toString())
+      .where("googleLocation.lat", ">=", coordinate.minLat)
+      .where("googleLocation.lat", "<=", coordinate.maxLat)
+      .where("googleLocation.lng", ">=", coordinate.minLon)
+      .where("googleLocation.lng", "<=", coordinate.maxLon)
       .get();
-
+    console.log(snapshot);
+    console.log(snapshot.docs);
+    console.log(snapshot.docs.length);
     if (snapshot.empty) {
       return res.status(404).json({
         status: "error",
