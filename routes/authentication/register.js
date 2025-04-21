@@ -64,6 +64,7 @@ module.exports = (db, express, bucket, upload) => {
           },
           // shop location from user input
           shopLocation_th: {
+            place: data.shopLocation_th.place,
             province: data.shopLocation_th.province,
             district: data.shopLocation_th.district,
             subdistrict: data.shopLocation_th.subdistrict,
@@ -71,13 +72,14 @@ module.exports = (db, express, bucket, upload) => {
           },
           // shop location from google map api
           googleLocation: {
-            lat: data.googleLocation.lat,
-            lng: data.googleLocation.lng,
+            lat: Number(data.googleLocation.lat),
+            lng: Number(data.googleLocation.lng),
             formatted_address: data.googleLocation.formatted_address,
             place_name: data.googleLocation.place_name,
           },
           // shopkeeper location from user input
           shopkeeperLocation: {
+            place: data.shopkeeperLocation.userPlace,
             province: data.shopkeeperLocation.province,
             district: data.shopkeeperLocation.district,
             subdistrict: data.shopkeeperLocation.subdistrict,

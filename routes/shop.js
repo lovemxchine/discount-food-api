@@ -226,17 +226,22 @@ module.exports = (db, express, bucket, upload) => {
       // .where("lng", "<=", coordinate.maxLon.toString())
       // .get();
       .collection("shop")
-      .where("googleLocation.lat", ">=", coordinate.minLat.toString())
-      .where("googleLocation.lat", "<=", coordinate.maxLat.toString())
-      .where("googleLocation.lng", ">=", coordinate.minLon.toString())
-      .where("googleLocation.lng", "<=", coordinate.maxLon.toString())
+      .where("googleLocation.lat", ">=", coordinate.minLat)
+      .where("googleLocation.lat", "<=", coordinate.maxLat)
+      .where("googleLocation.lng", ">=", coordinate.minLon)
+      .where("googleLocation.lng", "<=", coordinate.maxLon)
       .get();
-
+    console.log(snapshot);
+    console.log(snapshot.docs);
+    console.log(snapshot.docs.length);
     if (snapshot.empty) {
-      return res
-        .status(404)
-        .json({ status: "error", message: "No shops found" });
+      return res.status(404).json({
+        status: "error",
+        message: "No shops found",
+        data: [],
+      });
     }
+
     const shopList = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
@@ -249,6 +254,7 @@ module.exports = (db, express, bucket, upload) => {
     });
     return res.status(200).json({
       status: "success",
+      message: "shop founded",
       data: shopList || [],
     });
   });
