@@ -62,5 +62,39 @@ module.exports = (db, express) => {
     }
   });
 
+  router.post("/favoriteShop", async (req, res) => {
+    try {
+      const { uid, shopUid } = req.body;
+
+      console.log(uid);
+      const userRef = db.collection("users").doc(uid);
+      const userDoc = await userRef.get();
+      console.log(userDoc);
+
+      if (!userDoc.exists) {
+        return res
+          .status(404)
+          .send({ status: "error", message: "User not found" });
+      }
+
+      const userData = userDoc.data();
+      const favShop = userData.favShop || [];
+      if (favShop.includes(shopUid)) {
+        const index = favShop.indexOf(shopUid);
+        favShop.splice(index, 1);
+        await userRef.update({ favShop });
+        return res.status(200).send({ status: "success", data: userData });
+      }
+      if (!favShop.includes(shopUid)) {
+        favShop.push(shopUid);
+        await userRef.update({ favShop });
+      }
+      return res.status(200).send({ status: "success", data: userData });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
   return router;
 };
