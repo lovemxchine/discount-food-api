@@ -96,5 +96,35 @@ module.exports = (db, express) => {
     }
   });
 
+  router.post("/reportShop", async (req, res) => {
+    try {
+      const { description, shopUid, title, shopName, userUid } = req.body;
+
+      const userRef = await db.collection("users").doc(userUid).get();
+
+      if (!userRef.exists) {
+        return res
+          .status(404)
+          .send({ status: "error", message: "User not found" });
+      }
+
+      const reportData = {
+        createdAt: new Date().toISOString(),
+        sender: userRef.data().fname + " " + userRef.data().lname,
+        title,
+        description,
+        shopUid,
+        shopName,
+      };
+
+      const reportRef = await db.collection("reports").add(reportData);
+
+      return res.status(200).send({ status: "success", data: reportData });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
   return router;
 };

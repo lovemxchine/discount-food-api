@@ -106,29 +106,31 @@ module.exports = (db, express) => {
       return res.status(500).send({ status: "failed" });
     }
   });
-  
+
   router.get("/customer", async (req, res) => {
     try {
-      const snapshot = await db.collection("users")
+      const snapshot = await db
+        .collection("users")
         .where("role", "==", "customer")
         .get();
-  
+
       if (snapshot.empty) {
         return res.status(200).send({ status: "success", data: [] });
       }
-  
+
       const customers = [];
       snapshot.forEach((doc) => {
         customers.push({ id: doc.id, ...doc.data() });
       });
-  
+
       return res.status(200).send({ status: "success", data: customers });
     } catch (error) {
       console.error("Error fetching customers:", error.message);
-      return res.status(500).send({ status: "failed", message: "Internal Server Error" });
+      return res
+        .status(500)
+        .send({ status: "failed", message: "Internal Server Error" });
     }
   });
-  
 
   router.get("/fetchRegisterShops", async (req, res) => {
     try {
@@ -153,6 +155,29 @@ module.exports = (db, express) => {
       return res.status(500).send({ status: "failed" });
     }
   });
+
+  router.get("/reportShop", async (req, res) => {
+    await db
+      .collection("reports")
+      .get()
+      .then((snapshot) => {
+        if (snapshot.empty) {
+          return res.status(200).send({ status: "success", data: [] });
+        }
+
+        const reports = [];
+        snapshot.forEach((doc) => {
+          reports.push(doc.data());
+        });
+
+        return res.status(200).send({ status: "success", data: reports });
+      })
+      .catch((error) => {
+        console.error("Error fetching reports:", error.message);
+        return res
+          .status(500)
+          .send({ status: "failed", message: "Internal Server Error" });
+      });
+  });
   return router;
-  
 };
