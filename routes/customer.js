@@ -51,7 +51,8 @@ module.exports = (db, express) => {
 
   router.get("/profileDetail", async (req, res) => {
     try {
-      const { uid } = req.body;
+      const { uid } = req.query;
+
       console.log(uid);
       const userData = await db.collection("users").doc(uid).get();
       return res.status(200).send({ status: "success", data: userData.data() });

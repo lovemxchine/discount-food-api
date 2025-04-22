@@ -4,7 +4,10 @@ module.exports = (db, express) => {
   router.get("/availableShop/", async (req, res) => {
     try {
       const shopList = [];
-      const shopsSnapshot = await db.collection("shop").get();
+      const shopsSnapshot = await db
+        .collection("shop")
+        .where("status", "==", "active")
+        .get();
       // เช็คทุกร้านค้า
       for (const shopDoc of shopsSnapshot.docs) {
         const shopData = shopDoc.data();
