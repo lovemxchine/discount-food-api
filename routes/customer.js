@@ -149,5 +149,16 @@ module.exports = (db, express) => {
     }
   });
 
+  router.get("/getShopDetails", async (req, res) => {
+    const { uid } = req.query;
+    try {
+      const shopData = await db.collection("shop").doc(uid).get();
+      return res.status(200).send({ status: "success", data: shopData.data() });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
   return router;
 };
