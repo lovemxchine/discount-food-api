@@ -126,7 +126,28 @@ module.exports = (db, express) => {
     }
   });
 
-  router.get("/")
+  router.get("/fetchFavoriteShop", async (req, res) => {
+    try {
+      const { uid } = req.query;
+      console.log(uid);
+      const userData = await db.collection("users").doc(uid).get();
+      const favShop = userData.data().favShop || [];
+
+      const result = [];
+
+      for (const shopUid of favShop) {
+        const shopDoc = await db.collection("shop").doc(shopUid).get();
+        if (shopDoc.exists) {
+          result.push({ id: shopUid, ...shopDoc.data() });
+        }
+      }
+
+      return res.status(200).send({ status: "success", data: result });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
 
   return router;
 };
