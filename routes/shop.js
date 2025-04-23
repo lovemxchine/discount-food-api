@@ -28,6 +28,31 @@ module.exports = (db, express, bucket, upload) => {
     });
     return res.status(200).send({ status: "success", data: shopList });
   });
+
+  router.get("/:uid/getAvailableProduct/", async (req, res) => {
+    const shopUid = req.params.uid;
+    const shop = await db
+      .collection("shop")
+      .doc(shopUid)
+      .collection("products")
+      .where("showStatus", "==", true)
+      .get();
+    const shopList = [];
+    shop.forEach((doc) => {
+      try {
+        let data = doc.data();
+        // data.discountAt = data.discountAt.toDate();
+        data.expiredDate = data.expiredDate.toDate();
+        console.log(data.expiredDate);
+        shopList.push(data);
+      } catch (e) {
+        console.log("error");
+        console.log(e);
+      }
+    });
+    return res.status(200).send({ status: "success", data: shopList });
+  });
+
   // Get All Order
   router.get("/:shopUid/getAllOrder/", async (req, res) => {
     const { shopUid } = req.params;

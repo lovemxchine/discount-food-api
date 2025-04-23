@@ -117,7 +117,7 @@ module.exports = (db, express) => {
         shopName,
       };
 
-      const reportRef = await db.collection("reports").add(reportData);
+      await db.collection("reports").add(reportData);
 
       return res.status(200).send({ status: "success", data: reportData });
     } catch (err) {
@@ -125,6 +125,8 @@ module.exports = (db, express) => {
       return res.status(400).send({ status: "error" });
     }
   });
+
+  router.get("/")
 
   return router;
 };
