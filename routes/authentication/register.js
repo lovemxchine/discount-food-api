@@ -29,7 +29,7 @@ module.exports = (db, express, bucket, upload) => {
       return res.status(500).send({ status: "failed" });
     }
   });
-  
+
   router.post("/registerShop/", upload.array("images", 3), async (req, res) => {
     const data = req.body;
 
@@ -44,7 +44,7 @@ module.exports = (db, express, bucket, upload) => {
         .doc("/" + data.uid + "/")
         .create({
           uid: data.uid,
-          shopName: data.shopName,
+          name: data.shopName,
           branch: data.branch || null,
           tel: data.tel,
           email: data.email,
@@ -85,10 +85,9 @@ module.exports = (db, express, bucket, upload) => {
             subdistrict: data.shopkeeperLocation.subdistrict,
             postcode: data.shopkeeperLocation.postcode,
           },
-          shopTime: {
-            closeAt: data.closeAt,
-            openAt: data.openAt,
-          },
+
+          closeAt: data.closeAt,
+          openAt: data.openAt,
         });
 
       return res.status(200).send({ status: "success", message: "data saved" });
