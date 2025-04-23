@@ -153,6 +153,11 @@ module.exports = (db, express) => {
     const { uid } = req.query;
     try {
       const shopData = await db.collection("shop").doc(uid).get();
+      if (!shopData.exists) {
+        return res
+          .status(404)
+          .send({ status: "error", message: "Shop not found" });
+      }
       return res.status(200).send({ status: "success", data: shopData.data() });
     } catch (err) {
       console.log(err.message);
