@@ -36,7 +36,7 @@ const guestRoute = require("./routes/guest")(db, express);
 const adminRoute = require("./routes/admin")(db, express);
 
 app.use(express.json());
-app.use(cors({ origin: true }));
+app.use(cors({ origin: "*" }));
 
 // TODO : add middleware to each endpoint/route for authentication (role)
 
