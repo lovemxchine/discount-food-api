@@ -337,7 +337,7 @@ module.exports = (db, express, bucket, upload) => {
 
   router.post("/updateOrderStatus", async (req, res) => {
     const { customerUid, shopUid, orderId, status } = req.body;
-    console.log(status);
+    console.log("status.log", req.body);
     if (!["Pending Order", "Success", "Rejected"].includes(status)) {
       return res.status(400).send({
         status: "error",
@@ -352,7 +352,13 @@ module.exports = (db, express, bucket, upload) => {
         .collection("orders")
         .doc(orderId)
         .get();
-      if (["Success", "Rejected"].includes(orderSnapshot.data().status)) {
+      if (!orderSnapshot.exists) {
+        return res.status(404).send({
+          status: "error",
+          message: "Order not found",
+        });
+      }
+      if (["Success", "Rejected"].includes(orderSnapshot.data())) {
         return res.status(400).send({
           status: "failed",
           message: "this order cant be updated",
