@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "clean": "rimraf dist",
+    "clean": "rm -rf dist && rm -rf node_modules",
     "build": "npm run clean",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
