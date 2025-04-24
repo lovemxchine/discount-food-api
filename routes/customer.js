@@ -186,7 +186,7 @@ module.exports = (db, express) => {
 
       await customerOrderRef.set({
         shopUid: data.shopUid,
-        orderAt: data.orderAt,
+        orderAt: new Date().toISOString(),
         totalPrice: totalPrice,
         // orderId: customerOrderRef.id,
         status: initStatus,
@@ -200,7 +200,7 @@ module.exports = (db, express) => {
 
       await shopOrderRef.set({
         customerUid: data.customerUid,
-        orderAt: data.orderAt,
+        orderAt: new Date().toISOString(),
         totalPrice: totalPrice,
         orderId: customerOrderRef.id,
         status: initStatus,
