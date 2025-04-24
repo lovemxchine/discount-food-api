@@ -97,5 +97,70 @@ module.exports = (db, express, bucket, upload) => {
     }
   });
 
+  router.post("/addRegisterShop/dontIntegrateThis",async (req, res) => {
+    const data = req.body;
+
+    console.log(data);
+
+    try {
+      // console.log("Image URLs:", imageUrls);
+
+      await db
+        .collection("in_register_shop")
+        .doc("/" + data.uid + "/")
+        .create({
+          uid: data.uid,
+          name: data.shopName,
+          branch: data.branch || null,
+          tel: data.tel,
+          email: data.email,
+
+          shopkeeperData: {
+            name: data.shopkeeperData.name,
+            surname: data.shopkeeperData.surname,
+            nationality: data.shopkeeperData.nationality,
+            role: "shopkeeper",
+          },
+
+          // shop img url
+          imgUrl: {
+            shopCoverUrl: data.imgUrl.shopCoverUrl,
+            shopUrl: data.imgUrl.shopUrl,
+            certificateUrl: data.imgUrl.certificateUrl,
+          },
+          // shop location from user input
+          shopLocation_th: {
+            place: data.shopLocation_th.place,
+            province: data.shopLocation_th.province,
+            district: data.shopLocation_th.district,
+            subdistrict: data.shopLocation_th.subdistrict,
+            postcode: data.shopLocation_th.postcode,
+          },
+          // shop location from google map api
+          googleLocation: {
+            lat: Number(data.googleLocation.lat),
+            lng: Number(data.googleLocation.lng),
+            formatted_address: data.googleLocation.formatted_address,
+            place_name: data.googleLocation.place_name,
+          },
+          // shopkeeper location from user input
+          shopkeeperLocation: {
+            place: data.shopkeeperLocation.userPlace,
+            province: data.shopkeeperLocation.province,
+            district: data.shopkeeperLocation.district,
+            subdistrict: data.shopkeeperLocation.subdistrict,
+            postcode: data.shopkeeperLocation.postcode,
+          },
+
+          closeAt: data.closeAt,
+          openAt: data.openAt,
+        });
+
+      return res.status(200).send({ status: "success", message: "data saved" });
+    } catch (error) {
+      console.log(error.message);
+      return res.status(500).send({ status: "failed" });
+    }
+  });
   return router;
 };

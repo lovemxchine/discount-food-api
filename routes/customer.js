@@ -165,5 +165,108 @@ module.exports = (db, express) => {
     }
   });
 
+  router.post("/orderRequest", async (req, res) => {
+    const data = req.body;
+    // needed { customerUid, shopUid, orderAt, list  }
+    try {
+      const initStatus = "Pending Order";
+      const totalPrice = data.list.reduce((acc, item) => {
+        const price = Number(item.price);
+        const amount = Number(item.amount);
+        const subtotal = price * amount;
+
+        return acc + subtotal;
+      }, 0);
+      console.log(totalPrice);
+      const customerOrderRef = db
+        .collection("users")
+        .doc(data.customerUid)
+        .collection("orders")
+        .doc();
+
+      await customerOrderRef.set({
+        shopUid: data.shopUid,
+        orderAt: data.orderAt,
+        totalPrice: totalPrice,
+        // orderId: customerOrderRef.id,
+        status: initStatus,
+      });
+
+      const shopOrderRef = db
+        .collection("shop")
+        .doc(data.shopUid)
+        .collection("orders")
+        .doc(customerOrderRef.id);
+
+      await shopOrderRef.set({
+        customerUid: data.customerUid,
+        orderAt: data.orderAt,
+        totalPrice: totalPrice,
+        orderId: customerOrderRef.id,
+        status: initStatus,
+        list: data.list,
+        receiptUrl: data.receiptUrl,
+      });
+
+      return res.status(200).send({ status: "success" });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
+  router.get("/fetchOrder", async (req, res) => {
+    const { uid } = req.query;
+    try {
+      const orderSnapshot = await db
+        .collection("users")
+        .doc(uid)
+        .collection("orders")
+        .get();
+
+      if (orderSnapshot.empty) {
+        return res.status(200).send({ status: "success", data: [] });
+      }
+
+      const orders = orderSnapshot.docs.map((doc) => ({
+        orderId: doc.id,
+        ...doc.data(),
+      }));
+
+      return res.status(200).send({ status: "success", data: orders });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
+  router.get("/fetchOrderDetail", async (req, res) => {
+    const { shopUid, orderId } = req.query;
+    try {
+      const orderSnapshot = await db
+        .collection("shop")
+        .doc(shopUid)
+        .collection("orders")
+        .doc(orderId)
+        .get();
+
+      // if (orderSnapshot.empty) {
+      //   return res.status(200).send({ status: "success", data: [] });
+      // }
+      if (!orderSnapshot.exists) {
+        return res
+          .status(404)
+          .send({ status: "error", message: "Order not found" });
+      }
+
+      return res
+        .status(200)
+        .send({ status: "success", data: orderSnapshot.data() });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
   return router;
 };

@@ -39,6 +39,7 @@ module.exports = (db, express, bucket, upload) => {
       .get();
     const shopList = [];
     shop.forEach((doc) => {
+      console.log(shop, "shop");
       try {
         let data = doc.data();
         // data.discountAt = data.discountAt.toDate();
@@ -282,6 +283,129 @@ module.exports = (db, express, bucket, upload) => {
       message: "shop founded",
       data: shopList || [],
     });
+  });
+  router.get("/:uid/fetchOrder", async (req, res) => {
+    const { uid } = req.params;
+    try {
+      const ordersList = await db
+        .collection("shop")
+        .doc(uid)
+        .collection("orders")
+        .get();
+
+      const ordersListData = [];
+      ordersList.forEach((doc) => {
+        try {
+          let data = doc.data();
+          ordersListData.push({
+            orderId: doc.id,
+            customerUid: data.customerUid,
+            orderAt: data.orderAt,
+            totalPrice: data.totalPrice,
+            status: data.status,
+          });
+        } catch (e) {
+          console.log("error", e);
+        }
+      });
+      return res.status(200).send({ status: "success", data: ordersListData });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
+  router.get("/:uid/fetchOrderDetail", async (req, res) => {
+    const { uid } = req.params;
+    const { orderId } = req.query;
+    try {
+      const ordersList = await db
+        .collection("shop")
+        .doc(uid)
+        .collection("orders")
+        .doc(orderId)
+        .get();
+
+      return res
+        .status(200)
+        .send({ status: "success", data: ordersList.data() });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
+  router.post("/updateOrderStatus", async (req, res) => {
+    const { customerUid, shopUid, orderId, status } = req.body;
+    console.log(status);
+    if (!["Pending Order", "Success", "Rejected"].includes(status)) {
+      return res.status(400).send({
+        status: "error",
+        message: "Invalid status value",
+      });
+    }
+
+    try {
+      const orderSnapshot = await db
+        .collection("shop")
+        .doc(shopUid)
+        .collection("orders")
+        .doc(orderId)
+        .get();
+      if (["Success", "Rejected"].includes(orderSnapshot.data().status)) {
+        return res.status(400).send({
+          status: "failed",
+          message: "this order cant be updated",
+        });
+      }
+      const orderShopStatus = await db
+        .collection("shop")
+        .doc(shopUid)
+        .collection("orders")
+        .doc(orderId)
+        .update({
+          status: status,
+        });
+      const orderCustomerStatus = await db
+        .collection("users")
+        .doc(customerUid)
+        .collection("orders")
+        .doc(orderId)
+        .update({
+          status: status,
+        });
+
+      return res
+        .status(200)
+        .send({ status: "success", data: orderCustomerStatus });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
+  router.post("/testAddedProduct", async (req, res) => {
+    const data = req.body;
+    try {
+      await db
+        .collection("shop")
+        .doc(data.uid)
+        .collection("products")
+        .add({
+          productName: data.productName,
+          salePrice: data.salePrice,
+          originalPrice: data.originalPrice,
+          stock: parseInt(data.stock),
+          expiredDate: data.expiredDate, // isoFormattedDate ??,
+          imageUrl: data.imageUrl,
+          discountAt: Timestamp.now(),
+          showStatus: true,
+        });
+      return res.status(200).send({ status: "success" });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
   });
 
   return router;

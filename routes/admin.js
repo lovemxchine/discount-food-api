@@ -179,5 +179,31 @@ module.exports = (db, express) => {
           .send({ status: "failed", message: "Internal Server Error" });
       });
   });
+
+  router.get("/testFetch", async (req, res) => {
+    const { uid, docId } = req.query;
+    try {
+      const snapshot = await db
+        .collection("shop")
+        .doc(uid)
+        .collection("orders")
+        .doc(docId)
+        .get();
+      console.log(snapshot.data());
+      return res.status(200).send({ status: "success", data: snapshot.data() });
+    } catch (error) {
+      console.error("Error fetching test data:", error.message);
+      return res
+        .status(500)
+        .send({ status: "failed", message: "Internal Server Error" });
+    }
+  });
+
+  router.post("/testUpdate", async (req, res) => {
+    const { uid } = req.body;
+
+    const snapshot = await db.collection("shop").doc(uid).set(req.body);
+    return res.status(200).send({ status: "success" });
+  });
   return router;
 };
