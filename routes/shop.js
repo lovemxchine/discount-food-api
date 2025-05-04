@@ -270,13 +270,14 @@ module.exports = (db, express, bucket, upload) => {
 
     const shopList = snapshot.docs.map((doc) => {
       const data = doc.data();
-      return {
-        shopId: doc.id,
-        shopName: data.shopName,
-        lat: data.lat,
-        lng: data.lng,
-        googleLocation: data.googleLocation,
-      };
+      return data;
+      // return {
+      //   shopId: doc.id,
+      //   shopName: data.shopName,
+      //   lat: data.lat,
+      //   lng: data.lng,
+      //   googleLocation: data.googleLocation,
+      // };
     });
     return res.status(200).json({
       status: "success",
@@ -381,9 +382,7 @@ module.exports = (db, express, bucket, upload) => {
           status: status,
         });
 
-      return res
-        .status(200)
-        .send({ status: "success", data: orderCustomerStatus });
+      return res.status(200).send({ status: "success" });
     } catch (err) {
       console.log(err.message);
       return res.status(400).send({ status: "error" });
