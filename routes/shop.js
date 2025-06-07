@@ -242,7 +242,7 @@ module.exports = (db, express, bucket, upload) => {
         .json({ status: "error", message: "Missing coordinates" });
     }
 
-    const coordinate = calculateCoordinate(parseFloat(lat), parseFloat(lng), 1);
+    const coordinate = calculateCoordinate(parseFloat(lat), parseFloat(lng), 5);
     console.log(coordinate);
     const snapshot = await db
       // .collection("shop")
