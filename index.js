@@ -19,7 +19,7 @@ const db = admin.firestore();
 const bucket = admin.storage().bucket(); // Using bucket from Firebase Admin SDK
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 20 * 1024 * 1024 }, // 5MB limit
 }); // Allow up to 3 images
 
 // Routes
