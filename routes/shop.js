@@ -265,13 +265,9 @@ module.exports = (db, express, bucket, upload) => {
         filteredDocs.push(doc);
       }
     }
-    // Replace snapshot.docs with filteredDocs below if you want only shops with available products
-    snapshot.docs = filteredDocs;
-    console.log(snapshot);
-    console.log(snapshot.docs);
-    console.log(snapshot.docs.length);
-
-    if (snapshot.empty) {
+    console.log("ssadasdasd z", filteredDocs);
+    // Use filteredDocs directly instead of snapshot.docs
+    if (filteredDocs.length === 0) {
       return res.status(404).json({
         status: "error",
         message: "No shops found",
@@ -279,16 +275,9 @@ module.exports = (db, express, bucket, upload) => {
       });
     }
 
-    const shopList = snapshot.docs.map((doc) => {
+    const shopList = filteredDocs.map((doc) => {
       const data = doc.data();
       return data;
-      // return {
-      //   shopId: doc.id,
-      //   shopName: data.shopName,
-      //   lat: data.lat,
-      //   lng: data.lng,
-      //   googleLocation: data.googleLocation,
-      // };
     });
     return res.status(200).json({
       status: "success",
