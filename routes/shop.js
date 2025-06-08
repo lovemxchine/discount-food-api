@@ -245,21 +245,32 @@ module.exports = (db, express, bucket, upload) => {
     const coordinate = calculateCoordinate(parseFloat(lat), parseFloat(lng), 5);
     console.log(coordinate);
     const snapshot = await db
-      // .collection("shop")
-      // .where("lat", ">=", coordinate.minLat.toString())
-      // .where("lat", "<=", coordinate.maxLat.toString())
-      // .where("lng", ">=", coordinate.minLon.toString())
-      // .where("lng", "<=", coordinate.maxLon.toString())
-      // .get();
       .collection("shop")
       .where("googleLocation.lat", ">=", coordinate.minLat)
       .where("googleLocation.lat", "<=", coordinate.maxLat)
       .where("googleLocation.lng", ">=", coordinate.minLon)
       .where("googleLocation.lng", "<=", coordinate.maxLon)
       .get();
+
+    // Filter shops that have at least one available product (showStatus == true)
+    const filteredDocs = [];
+    for (const doc of snapshot.docs) {
+      const productsSnapshot = await db
+        .collection("shop")
+        .doc(doc.id)
+        .collection("products")
+        .where("showStatus", "==", true)
+        .get();
+      if (!productsSnapshot.empty) {
+        filteredDocs.push(doc);
+      }
+    }
+    // Replace snapshot.docs with filteredDocs below if you want only shops with available products
+    snapshot.docs = filteredDocs;
     console.log(snapshot);
     console.log(snapshot.docs);
     console.log(snapshot.docs.length);
+
     if (snapshot.empty) {
       return res.status(404).json({
         status: "error",
