@@ -211,7 +211,7 @@ module.exports = (db, express, bucket, upload) => {
         orderId: customerOrderRef.id,
         status: initStatus,
         list: data.list,
-        receiptUrl: data.imageUrl,
+        receiptUrl: imageUrl,
       });
 
       return res.status(200).send({ status: "success" });
