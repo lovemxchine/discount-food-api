@@ -205,14 +205,24 @@ module.exports = (db, express, bucket, upload) => {
         .doc(customerOrderRef.id);
 
       const userRef = await db.collection("users").doc(data.customerUid).get();
-
+      // Parse data.list if it's a string
+      let orderList = [];
+      if (typeof data.list === "string") {
+        try {
+          orderList = JSON.parse(data.list);
+        } catch (e) {
+          orderList = [];
+        }
+      } else if (Array.isArray(data.list)) {
+        orderList = data.list;
+      }
       await shopOrderRef.set({
         customerUid: data.customerUid,
         orderAt: new Date().toISOString(),
         totalPrice: totalPrice,
         orderId: customerOrderRef.id,
         status: initStatus,
-        list: Array.isArray(data.list)
+        list: Array.isArray(orderList)
           ? data.list.map((item) => ({
               amount: item.quantity || item.amount || 1,
               foodName: item.productName || item.foodName || "",
