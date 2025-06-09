@@ -213,11 +213,7 @@ module.exports = (db, express, bucket, upload) => {
         orderId: customerOrderRef.id,
         status: initStatus,
         list: Array.isArray(data.list)
-          ? JSON.parse(
-              typeof data.list === "string"
-                ? data.list
-                : JSON.stringify(data.list)
-            ).map((item) => ({
+          ? data.list.map((item) => ({
               amount: item.quantity || item.amount || 1,
               foodName: item.productName || item.foodName || "",
               price: item.salePrice || item.price || 0,
