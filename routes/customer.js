@@ -204,6 +204,8 @@ module.exports = (db, express, bucket, upload) => {
         .collection("orders")
         .doc(customerOrderRef.id);
 
+      const userRef = await db.collection("users").doc(data.customerUid).get();
+
       await shopOrderRef.set({
         customerUid: data.customerUid,
         orderAt: new Date().toISOString(),
@@ -212,6 +214,7 @@ module.exports = (db, express, bucket, upload) => {
         status: initStatus,
         list: data.list,
         receiptUrl: imageUrl,
+        tel: userRef.data().tel,
       });
 
       return res.status(200).send({ status: "success" });
