@@ -182,13 +182,7 @@ module.exports = (db, express, bucket, upload) => {
           .status(400)
           .send({ status: "error", message: "Image upload failed" });
       }
-      const totalPrice = data.list.reduce((acc, item) => {
-        const price = Number(item.price);
-        const amount = Number(item.amount);
-        const subtotal = price * amount;
-
-        return acc + subtotal;
-      }, 0);
+      const totalPrice = data.total;
       console.log(totalPrice);
       const customerOrderRef = db
         .collection("users")
