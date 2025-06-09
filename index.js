@@ -31,7 +31,7 @@ const registerRoute = require("./routes/authentication/register")(
 );
 const signInRoute = require("./routes/authentication/signIn")(db, express);
 const shopRoute = require("./routes/shop")(db, express, bucket, upload);
-const customerRoute = require("./routes/customer")(db, express);
+const customerRoute = require("./routes/customer")(db, express, bucket, upload);
 const guestRoute = require("./routes/guest")(db, express);
 const adminRoute = require("./routes/admin")(db, express);
 

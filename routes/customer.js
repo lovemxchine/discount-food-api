@@ -1,5 +1,7 @@
 const express = require("express");
-module.exports = (db, express) => {
+const { uploadSingleImage } = require("../controller/image_controller");
+
+module.exports = (db, express, bucket, upload) => {
   const router = express.Router();
   router.get("/getShop/", async (req, res) => {});
   // ไว้สำหรับร้านค้าที่กำลังขายสินค้าอยู่
@@ -167,9 +169,18 @@ module.exports = (db, express) => {
 
   router.post("/orderRequest", async (req, res) => {
     const data = req.body;
+    let imageUrl = null;
     // needed { customerUid, shopUid, orderAt, list  }
     try {
       const initStatus = "Pending Order";
+      if (req.file) {
+        imageUrl = await uploadSingleImage(req.file, bucket);
+      }
+      if (!imageUrl) {
+        return res
+          .status(400)
+          .send({ status: "error", message: "Image upload failed" });
+      }
       const totalPrice = data.list.reduce((acc, item) => {
         const price = Number(item.price);
         const amount = Number(item.amount);
@@ -205,7 +216,7 @@ module.exports = (db, express) => {
         orderId: customerOrderRef.id,
         status: initStatus,
         list: data.list,
-        receiptUrl: data.receiptUrl,
+        receiptUrl: data.imageUrl,
       });
 
       return res.status(200).send({ status: "success" });
