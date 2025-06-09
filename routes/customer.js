@@ -223,7 +223,7 @@ module.exports = (db, express, bucket, upload) => {
         orderId: customerOrderRef.id,
         status: initStatus,
         list: Array.isArray(orderList)
-          ? data.list.map((item) => ({
+          ? orderList.map((item) => ({
               amount: item.quantity || item.amount || 1,
               foodName: item.productName || item.foodName || "",
               price: item.salePrice || item.price || 0,
