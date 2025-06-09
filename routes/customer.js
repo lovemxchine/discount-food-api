@@ -167,7 +167,7 @@ module.exports = (db, express, bucket, upload) => {
     }
   });
 
-  router.post("/orderRequest", upload.single("image"), async (req, res) => {
+  router.post("/orderRequest", upload.single("image", 1), async (req, res) => {
     const data = req.body;
     console.log(data);
     let imageUrl = null;
