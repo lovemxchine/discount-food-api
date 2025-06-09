@@ -167,8 +167,9 @@ module.exports = (db, express, bucket, upload) => {
     }
   });
 
-  router.post("/orderRequest", async (req, res) => {
+  router.post("/orderRequest", upload.single("image"), async (req, res) => {
     const data = req.body;
+    console.log(data);
     let imageUrl = null;
     // needed { customerUid, shopUid, orderAt, list  }
     try {
