@@ -479,5 +479,31 @@ module.exports = (db, express, bucket, upload) => {
       return res.status(400).send({ status: "error" });
     }
   });
+
+
+  router.post("/updateTimeSet", async (req, res) => {
+  try {
+    console.log(req.body);
+    const { uid } = req.query;
+
+    if (!uid) {
+      return res.status(400).send({ status: "failed", message: "Missing uid in query" });
+    }
+
+    await db
+      .collection("shop")
+      .doc(uid)
+      .update({
+        "shopData.openAt": req.body.openAt,
+        "shopData.closeAt": req.body.closeAt,
+      });
+
+    return res.status(200).send({ status: "success", message: "data updated" });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ status: "failed", message: error.message });
+  }
+});
+
   return router;
 };
