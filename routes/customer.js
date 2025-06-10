@@ -191,7 +191,7 @@ module.exports = (db, express, bucket, upload) => {
         .doc();
 
       await customerOrderRef.set({
-        shopName: data.shopName,
+        shopName: data.name + " " + data.branch,
         shopUid: data.shopUid,
         orderAt: new Date().toISOString(),
         totalPrice: totalPrice,
