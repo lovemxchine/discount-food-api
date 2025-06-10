@@ -495,8 +495,8 @@ module.exports = (db, express, bucket, upload) => {
       .collection("shop")
       .doc(uid)
       .update({
-        "shopData.openAt": req.body.openAt,
-        "shopData.closeAt": req.body.closeAt,
+        "openAt": req.body.openAt,
+        "closeAt": req.body.closeAt,
       });
 
     return res.status(200).send({ status: "success", message: "data updated" });
