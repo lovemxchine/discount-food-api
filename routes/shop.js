@@ -413,5 +413,71 @@ module.exports = (db, express, bucket, upload) => {
     }
   });
 
+  router.post("/updatePayment", upload.single("image", 1), async (req, res) => {
+    const { shopId, accName, bankName, bankNumber } = req.body;
+    let qrImg = null;
+    if (!shopId) {
+      return res
+        .status(400)
+        .send({ status: "error", message: "shopId is required" });
+    }
+    try {
+      if (req.file) {
+        qrImg = await uploadSingleImage(req.file, bucket);
+        if (!qrImg) {
+          return res
+            .status(400)
+            .send({ status: "error", message: "Image upload failed" });
+        }
+      }
+
+      const updateField = {
+        ...(qrImg || qrImg == "" ? { qrImg } : {}),
+        ...(accName || accName == "" ? { accName } : {}),
+        ...(bankName || bankName == "" ? { bankName } : {}),
+        ...(bankNumber || bankNumber == "" ? { bankNumber } : {}),
+      };
+      console.log("updateField", updateField);
+      if (Object.keys(updateField).length === 0) {
+        return res
+          .status(400)
+          .send({ status: "error", message: "No fields to update" });
+      }
+      // Only update the specified fields inside the "payment" object, without overwriting other fields
+      await db.collection("shop").doc(shopId).set(
+        {
+          payment: updateField,
+        },
+        { merge: true }
+      );
+      return res.status(200).send({ status: "success" });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
+
+  router.post("/getPayment", async (req, res) => {
+    const { shopId } = req.body;
+    if (!shopId) {
+      return res
+        .status(400)
+        .send({ status: "error", message: "shopId is required" });
+    }
+    try {
+      const shopDoc = await db.collection("shop").doc(shopId).get();
+      if (!shopDoc.exists) {
+        return res.status(404).send({
+          status: "error",
+          message: "Shop not found",
+        });
+      }
+      const paymentData = shopDoc.data().payment || {};
+      return res.status(200).send({ status: "success", data: paymentData });
+    } catch (err) {
+      console.log(err.message);
+      return res.status(400).send({ status: "error" });
+    }
+  });
   return router;
 };
