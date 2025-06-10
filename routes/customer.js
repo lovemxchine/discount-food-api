@@ -189,16 +189,15 @@ module.exports = (db, express, bucket, upload) => {
         .doc(data.customerUid)
         .collection("orders")
         .doc();
-      const shopData = db.collection("shop").doc(data.shopUid).get();
-      console.log(shopData);
-
+      const shopData = await db.collection("shop").doc(data.shopUid).get();
       await customerOrderRef.set({
-        shopName: shopData.name + " " + shopData.branch,
+        shopName: shopData.data().name + " สาขา: " + shopData.data().branch,
         shopUid: data.shopUid,
         orderAt: new Date().toISOString(),
         totalPrice: totalPrice,
         // orderId: customerOrderRef.id,
         status: initStatus,
+        detail: data.detail || "",
       });
 
       const shopOrderRef = db
@@ -235,6 +234,7 @@ module.exports = (db, express, bucket, upload) => {
           : [],
         receiptUrl: imageUrl,
         tel: userRef.data().tel,
+        detail: data.detail || "",
       });
 
       return res.status(200).send({ status: "success" });
