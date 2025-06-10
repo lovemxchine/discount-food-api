@@ -189,7 +189,8 @@ module.exports = (db, express, bucket, upload) => {
         .doc(data.customerUid)
         .collection("orders")
         .doc();
-      const shopData = db.collection("shop").doc(data.shopUid).doc();
+      const shopData = db.collection("shop").doc(data.shopUid).get();
+      console.log(shopData);
 
       await customerOrderRef.set({
         shopName: shopData.name + " " + shopData.branch,
