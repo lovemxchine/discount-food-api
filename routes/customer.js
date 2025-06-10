@@ -250,6 +250,7 @@ module.exports = (db, express, bucket, upload) => {
         .collection("users")
         .doc(uid)
         .collection("orders")
+        .orderBy("orderAt", "desc")
         .get();
 
       if (orderSnapshot.empty) {
