@@ -457,8 +457,8 @@ module.exports = (db, express, bucket, upload) => {
     }
   });
 
-  router.post("/getPayment", async (req, res) => {
-    const { shopId } = req.body;
+  router.get("/getPayment", async (req, res) => {
+    const { shopId } = req.query;
     if (!shopId) {
       return res
         .status(400)
@@ -479,6 +479,7 @@ module.exports = (db, express, bucket, upload) => {
       return res.status(400).send({ status: "error" });
     }
   });
+
 
 
   router.post("/updateTimeSet", async (req, res) => {
