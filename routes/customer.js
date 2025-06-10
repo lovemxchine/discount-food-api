@@ -189,9 +189,10 @@ module.exports = (db, express, bucket, upload) => {
         .doc(data.customerUid)
         .collection("orders")
         .doc();
-      const shopData = await db.collection("shop").doc(data.shopUid).get();
+      const shopData = db.collection("shop").doc(data.shopUid);
+      const shopNamed = await shopData.get();
       await customerOrderRef.set({
-        shopName: shopData.data().name + " สาขา: " + shopData.data().branch,
+        shopName: shopNamed.data().name + " สาขา: " + shopNamed.data().branch,
         shopUid: data.shopUid,
         orderAt: new Date().toISOString(),
         totalPrice: totalPrice,
@@ -225,12 +226,24 @@ module.exports = (db, express, bucket, upload) => {
         orderId: customerOrderRef.id,
         status: initStatus,
         list: Array.isArray(orderList)
-          ? orderList.map((item) => ({
-              amount: item.quantity || item.amount || 1,
-              foodName: item.productName || item.foodName || "",
-              price: item.salePrice || item.price || 0,
-              productId: item.productId,
-            }))
+          ? await Promise.all(
+              orderList.map(async (item) => {
+                const shopProductDoc = await shopData
+                  .collection("products")
+                  .doc(item.productId)
+                  .get();
+
+                return {
+                  amount: item.quantity || item.amount || 1,
+                  foodName: item.productName || item.foodName || "",
+                  price: item.salePrice || item.price || 0,
+                  productId: item.productId,
+                  expiryDate: shopProductDoc.exists
+                    ? shopProductDoc.data().expiredDate || null
+                    : null,
+                };
+              })
+            )
           : [],
         receiptUrl: imageUrl,
         tel: userRef.data().tel,
