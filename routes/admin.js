@@ -1,3 +1,6 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
 module.exports = (db, express) => {
   const router = express.Router();
 
@@ -204,6 +207,82 @@ module.exports = (db, express) => {
 
     const snapshot = await db.collection("shop").doc(uid).set(req.body);
     return res.status(200).send({ status: "success" });
+  });
+
+  router.post("/register", async (req, res) => {
+    const data = req.body;
+
+    try {
+      // Create a new admin document
+      // Hash the password before storing
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+
+      // Store admin in DB
+      await db.collection("admin").add({
+        email: data.email,
+        password: hashedPassword,
+      });
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { email: data.email, role: "admin" },
+        process.env.JWT_SECRET || "your_jwt_secret",
+        { expiresIn: "1d" }
+      );
+
+      // Return token in response
+      return res
+        .status(201)
+        .send({ status: "success", message: "Admin registered", token });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ status: "failed", message: error.message });
+    }
+  });
+
+  // Admin login
+  router.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+      // Find admin by email
+      const snapshot = await db
+        .collection("admin")
+        .where("email", "==", email)
+        .limit(1)
+        .get();
+
+      if (snapshot.empty) {
+        return res
+          .status(401)
+          .send({ status: "failed", message: "Invalid credentials" });
+      }
+
+      const adminDoc = snapshot.docs[0];
+      const adminData = adminDoc.data();
+
+      // Compare password
+      const isMatch = await bcrypt.compare(password, adminData.password);
+      if (!isMatch) {
+        return res
+          .status(401)
+          .send({ status: "failed", message: "Invalid credentials" });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { email: adminData.email, role: "admin" },
+        process.env.JWT_SECRET || "your_jwt_secret",
+        { expiresIn: "1d" }
+      );
+
+      return res
+        .status(200)
+        .send({ status: "success", message: "Login successful", token });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ status: "failed", message: error.message });
+    }
   });
   return router;
 };
