@@ -30,7 +30,7 @@ module.exports = (db, express, bucket, upload) => {
     }
   });
 
-  router.post("/registerShop/", upload.array("images", 3), async (req, res) => {
+  router.post("/registerShop/", upload.array("images", 4), async (req, res) => {
     const data = req.body;
 
     console.log(data);
@@ -86,6 +86,13 @@ module.exports = (db, express, bucket, upload) => {
             postcode: data.shopkeeperLocation.postcode,
           },
 
+          payment: {
+            bankName: data.payment.bankName,
+            accName: data.payment.accName,
+            bankNumber: data.payment.bankNumber,
+            qrImg: imageUrls[3] ?? null,
+          },
+
           closeAt: data.closeAt,
           openAt: data.openAt,
         });
@@ -97,7 +104,7 @@ module.exports = (db, express, bucket, upload) => {
     }
   });
 
-  router.post("/addRegisterShop/dontIntegrateThis",async (req, res) => {
+  router.post("/addRegisterShop/dontIntegrateThis", async (req, res) => {
     const data = req.body;
 
     console.log(data);
