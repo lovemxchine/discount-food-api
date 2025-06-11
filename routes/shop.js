@@ -495,7 +495,7 @@ module.exports = (db, express, bucket, upload) => {
       .collection("shop")
       .doc(uid)
       .update({
-        "shopkeeperData.name": req.body.name,
+        "name": req.body.name,
         "tel": req.body.tel,
         "openAt": req.body.openAt,
         "closeAt": req.body.closeAt,
