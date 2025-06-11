@@ -482,7 +482,7 @@ module.exports = (db, express, bucket, upload) => {
 
 
 
-  router.post("/updateTimeSet", async (req, res) => {
+  router.post("/updateShop", async (req, res) => {
   try {
     console.log(req.body);
     const { uid } = req.query;
