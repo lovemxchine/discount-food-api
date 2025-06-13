@@ -1,6 +1,7 @@
 const { uploadSingleImage } = require("../controller/image_controller");
 const calculateCoordinate = require("../utils/func/calculate-coordinate");
 const { Timestamp } = require("firebase-admin/firestore");
+const {uploadMultipleImages} = require("../controller/image_controller");
 
 module.exports = (db, express, bucket, upload) => {
   const router = express.Router();
@@ -507,6 +508,61 @@ module.exports = (db, express, bucket, upload) => {
     return res.status(500).send({ status: "failed", message: error.message });
   }
 });
+
+router.post("/updateShopImages", upload.array("images", 3), async (req, res) => {
+  const { uid } = req.query;
+
+  console.log("req.query:", req.query);
+  console.log("req.files:", req.files);
+
+  if (!uid) {
+    return res.status(400).send({ status: "failed", message: "Missing uid in query" });
+  }
+
+  try {
+    const imageUrls = await uploadMultipleImages(req, bucket);
+
+    const updateData = {};
+
+    if (imageUrls[0]) updateData["imgUrl.certificateUrl"] = imageUrls[0];
+    if (imageUrls[1]) updateData["imgUrl.shopCoverUrl"] = imageUrls[1];
+    if (imageUrls[2]) updateData["imgUrl.shopUrl"] = imageUrls[2];
+
+    await db.collection("shop").doc(uid).update(updateData);
+
+    return res.status(200).send({ status: "success", message: "Images updated" });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ status: "failed", message: error.message });
+  }
+});
+
+router.post("/updateQrImage", upload.single("image"), async (req, res) => {
+  const { uid } = req.query;
+
+  console.log("req.query:", req.query);
+  console.log("req.file:", req.file);
+
+  if (!uid) {
+    return res.status(400).send({ status: "failed", message: "Missing uid in query" });
+  }
+
+  try {
+    const imageUrl = await uploadSingleImage(req.file, bucket);
+
+    await db.collection("shop").doc(uid).update({
+      "payment.qrImg": imageUrl,
+    });
+
+    return res.status(200).send({ status: "success", message: "QR image updated" });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send({ status: "failed", message: error.message });
+  }
+});
+
+
+
 
   return router;
 };
