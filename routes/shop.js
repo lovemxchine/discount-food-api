@@ -1,6 +1,8 @@
 const { uploadSingleImage } = require("../controller/image_controller");
 const calculateCoordinate = require("../utils/func/calculate-coordinate");
 const { Timestamp } = require("firebase-admin/firestore");
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 const {uploadMultipleImages} = require("../controller/image_controller");
 
 module.exports = (db, express, bucket, upload) => {
@@ -481,16 +483,16 @@ module.exports = (db, express, bucket, upload) => {
     }
   });
 
-
-
   router.post("/updateShop", async (req, res) => {
   try {
     console.log(req.body);
     const { uid } = req.query;
 
-    if (!uid) {
-      return res.status(400).send({ status: "failed", message: "Missing uid in query" });
-    }
+      if (!uid) {
+        return res
+          .status(400)
+          .send({ status: "failed", message: "Missing uid in query" });
+      }
 
     await db
       .collection("shop")
@@ -564,5 +566,31 @@ router.post("/updateQrImage", upload.single("image"), async (req, res) => {
 
 
 
+  router.post("/test-mailer", async (req, res) => {
+    const { to, subject, text } = req.body;
+
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: `"My App" <${process.env.EMAIL_USER}>`,
+        to,
+        subject,
+        text,
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      res.status(200).json({ message: "Email sent!", info });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      res.status(500).json({ message: "Failed to send email", error });
+    }
+  });
   return router;
 };

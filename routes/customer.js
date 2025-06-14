@@ -192,7 +192,8 @@ module.exports = (db, express, bucket, upload) => {
       const shopData = db.collection("shop").doc(data.shopUid);
       const shopNamed = await shopData.get();
       await customerOrderRef.set({
-        shopName: shopNamed.data().name + " สาขา: " + shopNamed.data().branch,
+        shopName:
+          shopNamed.data().name + " สาขา: " + shopNamed.data()?.branch || "",
         shopUid: data.shopUid,
         orderAt: new Date().toISOString(),
         totalPrice: totalPrice,
@@ -312,30 +313,30 @@ module.exports = (db, express, bucket, upload) => {
   });
 
   router.post("/updateCustomer", async (req, res) => {
-  try {
-    console.log(req.body);
-    const { uid } = req.query; 
+    try {
+      console.log(req.body);
+      const { uid } = req.query;
 
-    if (!uid) {
-      return res.status(400).send({ status: "failed", message: "Missing uid in query" });
-    }
+      if (!uid) {
+        return res
+          .status(400)
+          .send({ status: "failed", message: "Missing uid in query" });
+      }
 
-    await db
-      .collection("users")
-      .doc(uid)
-      .update({
+      await db.collection("users").doc(uid).update({
         fname: req.body.fname,
         lname: req.body.lname,
         tel: req.body.tel,
       });
 
-    return res.status(200).send({ status: "success", message: "data updated" });
-  } catch (error) {
-    console.log(error.message);
-    return res.status(500).send({ status: "failed", message: error.message });
-  }
-});
-
+      return res
+        .status(200)
+        .send({ status: "success", message: "data updated" });
+    } catch (error) {
+      console.log(error.message);
+      return res.status(500).send({ status: "failed", message: error.message });
+    }
+  });
 
   return router;
 };

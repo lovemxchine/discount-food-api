@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const sendMail = require("../utils/func/sending-mail.js");
 
 module.exports = (db, express) => {
   const router = express.Router();
@@ -7,22 +8,36 @@ module.exports = (db, express) => {
   router.post("/confirmationShop", async (req, res) => {
     try {
       const { uid, status } = req.body;
+
+      const shop = await db.collection("in_register_shop").doc(uid).get();
+      const shopData = shop.data();
+      if (!shop.exists) {
+        return res.status(404).send({ status: "not found shop" });
+      }
+
       if (status === "REJECT") {
+        await sendMail(
+          shopData.email,
+          "การยืนยันการลงทะเบียนร้านค้า",
+          "ร้านค้าของคุณถูกปฏิเสธการลงทะเบียน กรุณาติดต่อผู้ดูแลระบบเพื่อขอข้อมูลเพิ่มเติม"
+        );
         await db.collection("in_register_shop").doc(uid).delete();
-        return res.status(400).send({ status: "failed" });
+        return res.status(200).send({ status: "rejected" });
       }
       if (status !== "APPROVE") {
         return res.status(400).send({ status: "failed" });
       }
 
-      const shop = await db.collection("in_register_shop").doc(uid).get();
-      const shopData = shop.data();
       // เช็คทุกร้านค้า
       await db
         .collection("shop")
         .doc(uid)
         .set({ ...shopData, status: "active" });
-
+      sendMail(
+        shopData.email,
+        "การยืนยันการลงทะเบียนร้านค้า",
+        "ร้านค้าของคุณได้รับการอนุมัติแล้ว คุณสามารถเริ่มขายสินค้าได้ทันที"
+      );
       await db.collection("users").doc(uid).set({
         uid: uid,
         role: "shopkeeper",
