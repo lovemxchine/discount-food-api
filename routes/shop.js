@@ -540,8 +540,8 @@ module.exports = (db, express, bucket, upload) => {
 
         const updateData = {};
 
-        if (imageUrls[1]) updateData["imgUrl.shopCoverUrl"] = imageUrls[0];
-        if (imageUrls[2]) updateData["imgUrl.shopUrl"] = imageUrls[1];
+        if (imageUrls[0]) updateData["imgUrl.shopCoverUrl"] = imageUrls[0];
+        if (imageUrls[1]) updateData["imgUrl.shopUrl"] = imageUrls[1];
 
         await db.collection("shop").doc(uid).update(updateData);
 
