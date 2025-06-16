@@ -27,6 +27,7 @@ module.exports = (db, express, bucket, upload) => {
           .doc(shopId)
           .collection("products")
           .where("showStatus", "==", true)
+          .where("stock", ">", 0)
           .get();
 
         const products = productsSnapshot.docs.map((doc) => ({

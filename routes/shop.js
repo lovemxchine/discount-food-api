@@ -394,6 +394,25 @@ module.exports = (db, express, bucket, upload) => {
         .update({
           status: status,
         });
+      const orderData = orderSnapshot.data();
+      if (
+        status === "Success" &&
+        orderData &&
+        Array.isArray(orderData.products)
+      ) {
+        const batch = db.batch();
+        for (const product of orderData.products) {
+          const productRef = db
+            .collection("shop")
+            .doc(shopUid)
+            .collection("products")
+            .doc(product.productId);
+          batch.update(productRef, {
+            stock: db.FieldValue.increment(-product.amount || -1),
+          });
+        }
+        await batch.commit();
+      }
 
       return res.status(200).send({ status: "success" });
     } catch (err) {
@@ -427,6 +446,7 @@ module.exports = (db, express, bucket, upload) => {
   });
 
   router.post("/updatePayment", upload.single("image", 1), async (req, res) => {
+    console.log("updatePayment");
     const { shopId, accName, bankName, bankNumber } = req.body;
     let qrImg = null;
     if (!shopId) {
