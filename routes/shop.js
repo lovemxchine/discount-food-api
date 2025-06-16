@@ -411,9 +411,8 @@ module.exports = (db, express, bucket, upload) => {
             .doc(shopUid)
             .collection("products")
             .doc(product.productId);
-          batch.update(productRef, {
-            stock: db.FieldValue.increment(-product.amount || -1),
-          });
+          // Delete product if order is confirmed as success
+          batch.delete(productRef);
         }
         await batch.commit();
       }
