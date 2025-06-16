@@ -266,6 +266,7 @@ module.exports = (db, express, bucket, upload) => {
       .where("googleLocation.lat", "<=", coordinate.maxLat)
       .where("googleLocation.lng", ">=", coordinate.minLon)
       .where("googleLocation.lng", "<=", coordinate.maxLon)
+      .where("status", "==", "active")
       .get();
 
     // Filter shops that have at least one available product (showStatus == true)
