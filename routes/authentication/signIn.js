@@ -21,7 +21,6 @@ module.exports = (db, express) => {
         const user = await db
           .collection("shop")
           .where("uid", "==", req.body.checkUID)
-          .where("status", "==", "active")
           .get();
         if (user.empty) {
           // ถ้าไม่มีร้านค้าให้ส่งกลับไปที่หน้า register shop
