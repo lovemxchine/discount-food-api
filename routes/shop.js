@@ -399,20 +399,29 @@ module.exports = (db, express, bucket, upload) => {
           status: status,
         });
       const orderData = orderSnapshot.data();
-      if (
-        status === "Success" &&
-        orderData &&
-        Array.isArray(orderData.products)
-      ) {
+      if (status === "Success" && orderData) {
+        const { FieldValue } = require("firebase-admin").firestore;
+        console.log("Decreasing stock for products in order");
         const batch = db.batch();
-        for (const product of orderData.products) {
+        for (const product of orderData.list || []) {
+          console.log("Decreasing stock for products sssin order");
+
           const productRef = db
             .collection("shop")
             .doc(shopUid)
             .collection("products")
             .doc(product.productId);
-          // Delete product if order is confirmed as success
-          batch.delete(productRef);
+          // Collect the product document for logging or further processing if needed
+          const productDoc = await productRef.get();
+          const orderedAmount = product.amount || 1;
+          console.log(
+            `Decreasing stock for productId: ${product.productId}, orderedAmount: ${orderedAmount}`,
+            { productData: productDoc.exists ? productDoc.data() : null }
+          );
+          // Decrease the stock field by the ordered amount using Firestore increment
+          batch.update(productRef, {
+            stock: FieldValue.increment(-orderedAmount),
+          });
         }
         await batch.commit();
       }
