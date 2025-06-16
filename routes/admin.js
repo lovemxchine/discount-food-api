@@ -33,7 +33,7 @@ module.exports = (db, express) => {
         .collection("shop")
         .doc(uid)
         .set({ ...shopData, status: "active" });
-      sendMail(
+      await sendMail(
         shopData.email,
         "การยืนยันการลงทะเบียนร้านค้า",
         "ร้านค้าของคุณได้รับการอนุมัติแล้ว คุณสามารถเริ่มขายสินค้าได้ทันที"
@@ -48,7 +48,6 @@ module.exports = (db, express) => {
       });
       await db.collection("in_register_shop").doc(uid).delete();
 
-      //   console.log(shopList);
       return res.status(200).send({ status: "success" });
     } catch (error) {
       console.log(error);
