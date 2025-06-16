@@ -39,11 +39,6 @@ module.exports = (db, express) => {
             data: [user.data(), req.body.checkUID],
           });
         }
-        return res.status(200).send({
-          userStatus: "shopkeeper",
-          role: data.role,
-          data: [user.data(), req.body.checkUID],
-        });
       }
       // console.log(role === "customer");
       return res.status(200).send({
