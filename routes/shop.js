@@ -3,7 +3,7 @@ const calculateCoordinate = require("../utils/func/calculate-coordinate");
 const { Timestamp } = require("firebase-admin/firestore");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
-const {uploadMultipleImages} = require("../controller/image_controller");
+const { uploadMultipleImages } = require("../controller/image_controller");
 
 module.exports = (db, express, bucket, upload) => {
   const router = express.Router();
@@ -110,7 +110,12 @@ module.exports = (db, express, bucket, upload) => {
         const isoFormattedDate = `${year}-${month}-${day}T00:00:00.000Z`;
         // console.log(isoFormattedDate);
 
-        const formattedDate = new Date(isoFormattedDate);
+        // const formattedDate = new Date(isoFormattedDate);
+        const formattedDate = new Date(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day)
+        );
         // if (isNaN(formattedDate.getTime())) {
         //   return res
         //     .status(400)
@@ -237,7 +242,7 @@ module.exports = (db, express, bucket, upload) => {
   });
 
   router.get("/nearbyShop", async (req, res) => {
-    const { lng, lat } = req.query;
+    const { lng, lat, distance } = req.query;
 
     if (!lng || !lat) {
       return res
@@ -245,7 +250,12 @@ module.exports = (db, express, bucket, upload) => {
         .json({ status: "error", message: "Missing coordinates" });
     }
 
-    const coordinate = calculateCoordinate(parseFloat(lat), parseFloat(lng), 5);
+    // const coordinate = calculateCoordinate(parseFloat(lat), parseFloat(lng), 5);
+    const coordinate = calculateCoordinate(
+      parseFloat(lat),
+      parseFloat(lng),
+      distance ? parseInt(distance) : 5
+    );
     console.log(coordinate);
     const snapshot = await db
       .collection("shop")
@@ -484,9 +494,9 @@ module.exports = (db, express, bucket, upload) => {
   });
 
   router.post("/updateShop", async (req, res) => {
-  try {
-    console.log(req.body);
-    const { uid } = req.query;
+    try {
+      console.log(req.body);
+      const { uid } = req.query;
 
       if (!uid) {
         return res
@@ -494,77 +504,87 @@ module.exports = (db, express, bucket, upload) => {
           .send({ status: "failed", message: "Missing uid in query" });
       }
 
-    await db
-      .collection("shop")
-      .doc(uid)
-      .update({
-        "name": req.body.name,
-        "tel": req.body.tel,
-        "openAt": req.body.openAt,
-        "closeAt": req.body.closeAt,
+      await db.collection("shop").doc(uid).update({
+        name: req.body.name,
+        tel: req.body.tel,
+        openAt: req.body.openAt,
+        closeAt: req.body.closeAt,
       });
 
-    return res.status(200).send({ status: "success", message: "data updated" });
-  } catch (error) {
-    console.error(error.message);
-    return res.status(500).send({ status: "failed", message: error.message });
-  }
-});
+      return res
+        .status(200)
+        .send({ status: "success", message: "data updated" });
+    } catch (error) {
+      console.error(error.message);
+      return res.status(500).send({ status: "failed", message: error.message });
+    }
+  });
 
-router.post("/updateShopImages", upload.array("images", 3), async (req, res) => {
-  const { uid } = req.query;
+  router.post(
+    "/updateShopImages",
+    upload.array("images", 3),
+    async (req, res) => {
+      const { uid } = req.query;
 
-  console.log("req.query:", req.query);
-  console.log("req.files:", req.files);
+      console.log("req.query:", req.query);
+      console.log("req.files:", req.files);
 
-  if (!uid) {
-    return res.status(400).send({ status: "failed", message: "Missing uid in query" });
-  }
+      if (!uid) {
+        return res
+          .status(400)
+          .send({ status: "failed", message: "Missing uid in query" });
+      }
 
-  try {
-    const imageUrls = await uploadMultipleImages(req, bucket);
+      try {
+        const imageUrls = await uploadMultipleImages(req, bucket);
 
-    const updateData = {};
+        const updateData = {};
 
-    if (imageUrls[0]) updateData["imgUrl.certificateUrl"] = imageUrls[0];
-    if (imageUrls[1]) updateData["imgUrl.shopCoverUrl"] = imageUrls[1];
-    if (imageUrls[2]) updateData["imgUrl.shopUrl"] = imageUrls[2];
+        if (imageUrls[0]) updateData["imgUrl.certificateUrl"] = imageUrls[0];
+        if (imageUrls[1]) updateData["imgUrl.shopCoverUrl"] = imageUrls[1];
+        if (imageUrls[2]) updateData["imgUrl.shopUrl"] = imageUrls[2];
 
-    await db.collection("shop").doc(uid).update(updateData);
+        await db.collection("shop").doc(uid).update(updateData);
 
-    return res.status(200).send({ status: "success", message: "Images updated" });
-  } catch (error) {
-    console.error(error.message);
-    return res.status(500).send({ status: "failed", message: error.message });
-  }
-});
+        return res
+          .status(200)
+          .send({ status: "success", message: "Images updated" });
+      } catch (error) {
+        console.error(error.message);
+        return res
+          .status(500)
+          .send({ status: "failed", message: error.message });
+      }
+    }
+  );
 
-router.post("/updateQrImage", upload.single("image"), async (req, res) => {
-  const { uid } = req.query;
+  router.post("/updateQrImage", upload.single("image"), async (req, res) => {
+    const { uid } = req.query;
 
-  console.log("req.query:", req.query);
-  console.log("req.file:", req.file);
+    console.log("req.query:", req.query);
+    console.log("req.file:", req.file);
 
-  if (!uid) {
-    return res.status(400).send({ status: "failed", message: "Missing uid in query" });
-  }
+    if (!uid) {
+      return res
+        .status(400)
+        .send({ status: "failed", message: "Missing uid in query" });
+    }
 
-  try {
-    const imageUrl = await uploadSingleImage(req.file, bucket);
+    try {
+      const imageUrl = await uploadSingleImage(req.file, bucket);
 
-    await db.collection("shop").doc(uid).update({
-      "payment.qrImg": imageUrl,
-    });
+      await db.collection("shop").doc(uid).update({
+        "payment.qrImg": imageUrl,
+      });
 
-    return res.status(200).send({ status: "success", message: "QR image updated" });
-  } catch (error) {
-    console.error(error.message);
-    return res.status(500).send({ status: "failed", message: error.message });
-  }
-});
-
-
-
+      return res
+        .status(200)
+        .send({ status: "success", message: "QR image updated" });
+    } catch (error) {
+      console.error(error.message);
+      return res.status(500).send({ status: "failed", message: error.message });
+    }
+  });
 
   router.post("/test-mailer", async (req, res) => {
     const { to, subject, text } = req.body;
