@@ -15,6 +15,8 @@ module.exports = (db, express, bucket, upload) => {
       .collection("shop")
       .doc(shopUid)
       .collection("products")
+      .where("showStatus", "==", true)
+      .where("stock", ">", 0)
       .get();
     const shopList = [];
     shop.forEach((doc) => {
@@ -39,6 +41,7 @@ module.exports = (db, express, bucket, upload) => {
       .doc(shopUid)
       .collection("products")
       .where("showStatus", "==", true)
+      .where("stock", ">", 0)
       .get();
     const shopList = [];
     shop.forEach((doc) => {
