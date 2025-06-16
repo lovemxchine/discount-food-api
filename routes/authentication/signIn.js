@@ -27,7 +27,7 @@ module.exports = (db, express) => {
           return res.status(200).send({
             userStatus: "registerShop",
             role: data.role,
-            data: [user.data(), req.body.checkUID],
+            data: req.body.checkUID,
           });
         }
         // ถ้าร้านค้ามีแต่สถานะเป็น disable
@@ -36,7 +36,7 @@ module.exports = (db, express) => {
           return res.status(200).send({
             userStatus: "shopDisabled",
             role: data.role,
-            data: [user.data(), req.body.checkUID],
+            // data: [user.data(), req.body.checkUID],
           });
         }
       }
