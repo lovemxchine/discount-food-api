@@ -522,7 +522,7 @@ module.exports = (db, express, bucket, upload) => {
 
   router.post(
     "/updateShopImages",
-    upload.array("images", 3),
+    upload.array("images", 2),
     async (req, res) => {
       const { uid } = req.query;
 
@@ -540,9 +540,8 @@ module.exports = (db, express, bucket, upload) => {
 
         const updateData = {};
 
-        if (imageUrls[0]) updateData["imgUrl.certificateUrl"] = imageUrls[0];
-        if (imageUrls[1]) updateData["imgUrl.shopCoverUrl"] = imageUrls[1];
-        if (imageUrls[2]) updateData["imgUrl.shopUrl"] = imageUrls[2];
+        if (imageUrls[1]) updateData["imgUrl.shopCoverUrl"] = imageUrls[0];
+        if (imageUrls[2]) updateData["imgUrl.shopUrl"] = imageUrls[1];
 
         await db.collection("shop").doc(uid).update(updateData);
 
